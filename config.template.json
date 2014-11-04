@@ -1,0 +1,13 @@
+{
+    "environment": "development",
+
+    "production": {
+        "debug": "false",
+        "port": 5050
+    },
+
+    "development": {
+        "debug": "true",
+        "port": 5050
+    }
+}
