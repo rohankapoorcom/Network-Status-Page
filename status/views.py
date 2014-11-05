@@ -6,9 +6,9 @@ import json
 
 @app.route('/')
 def home():
-    print(status.modules['plex'].get_currently_playing_videos())
     return render_template('index.html', message=status.modules['plex'].get_token())
 
 @app.route('/now_playing/')
 def now_playing():
-    return json.dumps(status.modules['plex'].get_currently_playing_videos())
+    videos = status.modules['plex'].get_currently_playing_videos()
+    return render_template('now_playing.html', videos=videos)

@@ -40,6 +40,7 @@ class Plex:
             now_playing_video = {}
             metadata_url = video.get('key')
             device = video.find('Player').get('title')
+            now_playing_video['user'] = video.find('User').get('title')
 
             video_tree = ElementTree.fromstring(
                 requests.get(
@@ -52,8 +53,9 @@ class Plex:
             now_playing_video['type'] = video_type
 
             if (video_type == 'movie'):
-                now_playing_video['artwork'] = urllib.parse.quote_plus(
-                    '{}{}'.format(self._server, metadata.get('thumb'))
+                now_playing_video['artwork'] = '{}{}'.format(
+                    self._server,
+                    urllib.parse.quote(metadata.get('thumb'))
                     )
 
                 now_playing_video['title'] = metadata.get('title')
@@ -61,11 +63,12 @@ class Plex:
                 now_playing_video['summary'] = (summary[:800] + '...') if len(summary) > 800 else summary
 
             elif (video_type == 'episode'):
-                now_playing_video['artwork'] = urllib.parse.quote_plus(
-                    '{}{}'.format(self._server, metadata.get('grandparentThumb'))
+                now_playing_video['artwork'] = '{}{}'.format(
+                    self._server,
+                    urllib.parse.quote(metadata.get('grandparentThumb'))
                     )
 
-                now_playing_video['show_title'] = metadata.get('grandparentTitle')
+                now_playing_video['title'] = metadata.get('grandparentTitle')
                 now_playing_video['episode_title'] = metadata.get('grandparentTitle')
                 now_playing_video['summary'] = metadata.get('summary')
                 now_playing_video['season'] = metadata.get('parentIndex')
