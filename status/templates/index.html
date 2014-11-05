@@ -1,0 +1,108 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Network Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- styles -->
+    <link href="{{ url_for('static', filename='fonts/stylesheet.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/css/bootstrap.min.css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.0/css/font-awesome.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="row">
+            <!-- Left sidebar -->
+            <div class="col-md-3" style="padding-top: 20px;">
+              <!-- Online profiles -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title exoextralight">
+                    Weather
+                  </h4>
+                </div>
+                <div class="panel-body">
+                  <div id="left_column_top"></div>
+                </div>
+              </div>
+              <!-- Bandwidth -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title exoextralight">
+                    Bandwidth
+                  </h4>
+                </div>
+                <div class="panel-body" >
+                  <div id="bandwidth"></div>
+                </div>
+              </div>
+              <!-- Services -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title exoextralight">
+                    Services
+                  </h4>
+                </div>
+                <div id="services" class="panel-body">
+                </div>
+              </div>
+            </div>
+            <!-- Center Area -->
+            <div class="col-md-6">
+              <div id="now_playing_title">
+                <h1 class="exoextralight">Now Playing</h1>
+                <hr>
+              </div>
+              <div id="now_playing">
+              </div>             <hr class="visible-xs visible-sm">
+            </div>
+            <!-- Right sidebar -->
+            <div class="col-md-3" id="right_sidebar">
+              <!-- Load Panel -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                    <!-- Transcode sessions title & badge div-->
+                    <div id="transcodeSessions"></div>
+                </div>
+                <div class="panel-body">
+                  <div id="system_load"></div>  
+                <!--  <h4 class="exoextralight">Memory</h4>
+                  <div id="system_ram" style="height:40px"></div>
+                  <hr>  -->
+                </div>
+              </div>
+              <!-- Storage Panel -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title exoextralight">
+                    Storage
+                  </h4>
+                </div>
+                <div class="panel-body">
+                  <div id="disk_space"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="//code.jquery.com/jquery.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+    <script>
+    $(document).ready(function() {
+      $('[rel=tooltip]').tooltip();
+      $('[rel=popover]').popover();
+      loadStatus();
+    })
+    </script>
+    {{ flask_util_js.js }}
+  </body>
+</html>

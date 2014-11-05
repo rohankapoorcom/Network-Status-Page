@@ -1,0 +1,76 @@
+body {
+  text-align:center;
+}
+
+.center {
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.exoextralight {
+  font-family:exoextralight;
+}
+
+.exolight {
+  font-family:exolight;
+}
+
+[data-icon]:before {
+  font-family:MeteoconsRegular;
+  content:attr(data-icon);
+}
+
+.exoregular {
+  font-family:exoregular;
+}
+
+.no-link-color a,a:hover {
+  color:#999;
+}
+
+.carousel-control.left {
+  background-image: none;
+}
+
+.carousel-control.right {
+  background-image: none;
+}
+
+/* End of carousel shadow modification */
+
+/* Now Playing Progress Bar CSS */
+.now-playing-progress-bar {
+    height: 5px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    -webkit-border-radius: 0px;
+       -moz-border-radius: 0px;
+            border-radius: 0px;
+}
+/* End of Now Playing Progress Bar CSS */
+
+.panel-white-bg {
+  background-color: #ffffff;
+}
+
+/* Disables ping ID looking like a link and makes it look white */
+a#ping.badge.pull-right {
+  color:#FFF;
+}
+/* End of Ping ID hack */
+
+#now_playing {
+  overflow: auto;
+}
+
+#right_sidebar {
+  padding-top: 20px;
+}
+
+#system_load {
+  margin-bottom:-10px
+}
+
+#disk_space {
+  margin-bottom:-10px
+}
