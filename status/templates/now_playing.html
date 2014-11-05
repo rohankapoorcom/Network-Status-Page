@@ -6,14 +6,14 @@
       <div class="caption">
 
       {% if video['type'] == 'movie' %}
-        <p class="exolight" style="margin-top:5px;">{{ video['summary'] }}</p> 
+        <p class="exolight skinny-top-margin">{{ video['summary'] }}</p> 
 
       {% elif video['type'] == 'episode' %}
-        <h3 class="exoextralight" style="margin-top: 5px;">Season {{ video['season'] }}</h3>
-        <h4 class="exoextralight" style="margin-top: 5px;">E {{ video['episode_number'] }}</h4>
+        <h3 class="exoextralight skinny-top-margin">Season {{ video['season'] }}</h3>
+        <h4 class="exoextralight skinny-top-margin">E {{ video['episode_number'] }}</h4>
         <p class="exolight">{{ video['summary'] }}</p>
       {% endif %}
-        <h4 class="exoextralight" style="margin-top: 5px;">Viewer: {{ video['user'] }}</h4>
+        <h4 class="exoextralight skinny-top-margin">Viewer: {{ video['user'] }}</h4>
       </div>
     </div>
 
