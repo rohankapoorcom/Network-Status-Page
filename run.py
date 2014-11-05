@@ -2,8 +2,9 @@ import json
 
 from status import app
 import status
+from status.functions import Plex
 
-if __name__ == '__main__':
+def main():
     try:
         with open('config.json', 'r') as config_file:
             config = json.load(config_file)
@@ -18,4 +19,8 @@ if __name__ == '__main__':
         exit('Missing configuration in config.json')
 
     status.config = config
-    app.run(debug=status.config['debug'], port=status.config['port'])
+    status.modules['plex'] = Plex(**status.config['plex'])
+    app.run(**status.config['app'])
+
+if __name__ == '__main__':
+    main()

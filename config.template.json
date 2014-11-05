@@ -2,12 +2,28 @@
     "environment": "development",
 
     "production": {
-        "debug": "false",
-        "port": 5050
+    	"app": {
+    		"debug": "false",
+        	"port": 5050
+    	},
+    	"plex": {
+    		"api_token_uri": "https://my.plexapp.com/users/sign_in.xml",
+	        "server_name": "plex.example.com",
+	        "username": "insert_username_here",
+	        "password": "insert_password_here"
+    	}
     },
 
     "development": {
-        "debug": "true",
-        "port": 5050
+        "app": {
+    		"debug": "true",
+        	"port": 5050
+    	},
+    	"plex": {
+    		"api_token_uri": "https://my.plexapp.com/users/sign_in.xml",
+	        "server_name": "plex.example.com",
+	        "username": "insert_username_here",
+	        "password": "insert_password_here"
+    	}
     }
 }
