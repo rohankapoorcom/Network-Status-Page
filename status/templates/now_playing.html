@@ -1,25 +1,36 @@
-<div class="col-md-10 col-sm-offset-1">
-
-  {% for video in videos %}
-    <div class="thumbnail">
-      <img src="{{ video['artwork'] }}" alt="{{ video['title'] }}">
-      <div class="caption">
-
-      {% if video['type'] == 'movie' %}
-        <p class="exolight skinny-top-margin">{{ video['summary'] }}</p> 
-
-      {% elif video['type'] == 'episode' %}
-        <h3 class="exoextralight skinny-top-margin">Season {{ video['season'] }}</h3>
-        <h4 class="exoextralight skinny-top-margin">E {{ video['episode_number'] }}</h4>
-        <p class="exolight">{{ video['summary'] }}</p>
-      {% endif %}
-        <h4 class="exoextralight skinny-top-margin">Viewer: {{ video['user'] }}</h4>
-      </div>
-    </div>
-
-    {% if loop.revindex0 > 0 %}
-    <hr>
-    {% endif %}
-
-  {% endfor %}
+<div id="now_playing_title">
+  <h1 class="exoextralight">Now Playing</h1>
+  <hr>
 </div>
+
+<div id="now_playing">
+  <div class="col-md-10 col-sm-offset-1">
+
+    {% for video in videos %}
+      <div class="thumbnail">
+        <img src="{{ video['artwork'] }}" alt="{{ video['title'] }}">
+        <div class="caption">
+
+        {% if video['type'] == 'movie' %}
+          <p class="exolight skinny-top-margin">{{ video['summary'] }}</p> 
+
+        {% elif video['type'] == 'episode' %}
+          <h3 class="exoextralight skinny-top-margin">Season {{ video['season'] }}</h3>
+          <h4 class="exoextralight skinny-top-margin">E{{ video['episode_number'] }} - {{ video['episode_title'] }}</h4>
+          <p class="exolight">{{ video['summary'] }}</p>
+        {% endif %}
+          <span class="glyphicon glyphicon-play"></span>
+          <p class="exolight skinny-top-margin">{{ video['user'] }}</p>
+        </div>
+      </div>
+
+      {% if loop.revindex0 > 0 %}
+      <hr>
+      {% endif %}
+
+    {% endfor %}
+    
+  </div>
+</div>
+
+<hr class="visible-xs visible-sm">

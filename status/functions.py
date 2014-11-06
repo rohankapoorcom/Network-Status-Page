@@ -1,5 +1,4 @@
 from xml.etree import ElementTree
-import urllib.parse
 import requests
 
 class Plex:
@@ -28,55 +27,53 @@ class Plex:
 
         self._token = tree.get('authenticationToken')
 
+    def process_currently_playing_video(self, unprocessed_video):
+        video = {}
+        metadata_url = unprocessed_video.get('key')
+        device = unprocessed_video.find('Player').get('title')
+        video['user'] = unprocessed_video.find('User').get('title')
+
+        video_tree = ElementTree.fromstring(
+            requests.get(
+                '{}{}'.format(self._server, metadata_url)
+                ).content
+            )
+
+        metadata = video_tree.find('Video')
+        video_type = metadata.get('type')
+        video['type'] = video_type
+
+        if (video_type == 'movie'):
+            video['artwork'] = '{}{}'.format(
+                self._server,
+                metadata.get('thumb')
+                )
+
+            video['title'] = metadata.get('title')
+            summary = metadata.get('summary')
+            video['summary'] = (summary[:800] + '...') if len(summary) > 800 else summary
+
+        elif (video_type == 'episode'):
+            video['artwork'] = '{}{}'.format(
+                self._server,
+                metadata.get('thumb') if not metadata.get('grandparentThumb') else metadata.get('grandparentThumb')
+                )
+
+            video['title'] = metadata.get('grandparentTitle')
+            video['episode_title'] = metadata.get('title')
+            video['summary'] = metadata.get('summary')
+            video['season'] = metadata.get('parentIndex')
+            video['episode_number'] = metadata.get('index')
+
+        return video
+
     def get_currently_playing_videos(self):
-        now_playing_videos = []
         response = requests.get('{}{}'.format(self._server, Plex._STATUS_URL))
         tree = ElementTree.fromstring(response.content)
         videos = tree.findall('Video')
         if not videos:
             return []
-
-        for video in videos:
-            now_playing_video = {}
-            metadata_url = video.get('key')
-            device = video.find('Player').get('title')
-            now_playing_video['user'] = video.find('User').get('title')
-
-            video_tree = ElementTree.fromstring(
-                requests.get(
-                    '{}{}'.format(self._server, metadata_url)
-                    ).content
-                )
-
-            metadata = video_tree.find('Video')
-            video_type = metadata.get('type')
-            now_playing_video['type'] = video_type
-
-            if (video_type == 'movie'):
-                now_playing_video['artwork'] = '{}{}'.format(
-                    self._server,
-                    urllib.parse.quote(metadata.get('thumb'))
-                    )
-
-                now_playing_video['title'] = metadata.get('title')
-                summary = metadata.get('summary')
-                now_playing_video['summary'] = (summary[:800] + '...') if len(summary) > 800 else summary
-
-            elif (video_type == 'episode'):
-                now_playing_video['artwork'] = '{}{}'.format(
-                    self._server,
-                    urllib.parse.quote(metadata.get('grandparentThumb'))
-                    )
-
-                now_playing_video['title'] = metadata.get('grandparentTitle')
-                now_playing_video['episode_title'] = metadata.get('grandparentTitle')
-                now_playing_video['summary'] = metadata.get('summary')
-                now_playing_video['season'] = metadata.get('parentIndex')
-                now_playing_video['episode_number'] = metadata.get('index')
-
-            now_playing_videos.append(now_playing_video)
-
-        return now_playing_videos
+        return [self.process_currently_playing_video(video) for video in videos]
  
     def get_token(self):
         return self._token
