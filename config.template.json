@@ -3,8 +3,8 @@
 
     "production": {
     	"app": {
-    		"debug": "false",
-        	"port": 5050
+            "port": 5050,
+    		"host": "0.0.0.0"
     	},
     	"plex": {
     		"api_token_uri": "https://my.plexapp.com/users/sign_in.xml",
@@ -16,8 +16,8 @@
 
     "development": {
         "app": {
-    		"debug": "true",
-        	"port": 5050
+        	"port": 5050,
+            "host": "0.0.0.0"
     	},
     	"plex": {
     		"api_token_uri": "https://my.plexapp.com/users/sign_in.xml",
