@@ -1,3 +1,7 @@
+"""
+Contains functions and classes needed for processing the Network Status Page
+"""
+
 from xml.etree import ElementTree
 from flask import copy_current_request_context
 from flask_socketio import emit
@@ -9,9 +13,11 @@ import requests
 import gevent
 
 class Plex:
+    """Contains the functionality needed to communicate with a Plex server"""
     _STATUS_URL = '/status/sessions'
 
     def __init__(self, username, password, server_name, api_token_uri, **kwargs):
+        """Initializes the Plex server communication"""
         self._username = username
         self._password = password
         self._server = server_name
@@ -19,6 +25,7 @@ class Plex:
         self.fetch_token()
 
     def fetch_token(self):
+        """Fetch's the Plex authentication token"""
         headers = {
             'Content-Length' : 0,
             'X-Plex-Client-Identifier': __name__
@@ -35,6 +42,7 @@ class Plex:
         self._token = tree.get('authenticationToken')
 
     def process_currently_playing_video(self, unprocessed_video):
+        """Returns a dictionary containing information regarding the provided video"""
         video = {}
         metadata_url = unprocessed_video.get('key')
         device = unprocessed_video.find('Player').get('title')
@@ -75,6 +83,10 @@ class Plex:
         return video
 
     def get_currently_playing_videos(self):
+        """
+        Returns a list of dictionaries containing information about all
+        currently playing videos
+        """
         response = requests.get('{}{}'.format(self._server, Plex._STATUS_URL))
         tree = ElementTree.fromstring(response.content)
         videos = tree.findall('Video')
@@ -83,10 +95,15 @@ class Plex:
         return [self.process_currently_playing_video(video) for video in videos]
  
     def get_token(self):
+        """Returns the authentication token"""
         return self._token
 
 @app.before_first_request
 def spawn_greenlet():
+    """
+    Spawns a greenlet to communicate with Plex every second to update
+    the now playing information via SocketIO
+    """
     @copy_current_request_context
     def greenlet_get_now_playing():
         while True:
@@ -97,4 +114,8 @@ def spawn_greenlet():
 
 @socketio.on('connect')
 def client_connect():
+    """
+    Send the now playing information via SocketIO to new clients as
+    they connect to the server
+    """
     emit('status', {'plex': now_playing()})

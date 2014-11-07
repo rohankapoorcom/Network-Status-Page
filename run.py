@@ -1,3 +1,7 @@
+"""
+Launcher for the status package.
+This has to be run from one level above the package
+"""
 import json
 
 from status import app, socketio
@@ -5,13 +9,16 @@ from status.functions import Plex
 
 import status
 
-
 def main():
+    """
+    Loads the configuration from JSON and initializes the necessary modules
+    """
     try:
         with open('config.json', 'r') as config_file:
             config = json.load(config_file)
     except IOError:
         exit('Missing Config File: config.json')
+    
     env = config.get('environment', '')
     if not env:
         exit('Missing environment in config.json')
