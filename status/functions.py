@@ -89,6 +89,12 @@ class Plex:
         """
         response = requests.get('{}{}'.format(self._server, Plex._STATUS_URL))
         tree = ElementTree.fromstring(response.content)
+        tree = ElementTree.fromstring(
+            requests.get(
+                '{}{}'.format(self._server, Plex._STATUS_URL)
+            ).content
+        )
+
         videos = tree.findall('Video')
         if not videos:
             return []
