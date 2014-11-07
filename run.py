@@ -33,4 +33,6 @@ def main():
     socketio.run(app, **status.config['app'])
 
 if __name__ == '__main__':
+    from gevent import monkey
+    monkey.patch_all()
     main()

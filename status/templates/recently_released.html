@@ -1,0 +1,34 @@
+<div id="now_playing_title">
+  <h1 class="exoextralight">Recently Released</h1>
+  <hr>
+</div>
+
+<div id="now_playing">
+  <div class="col-md-10 col-sm-offset-1">
+    <div class="thumbnail">
+      <div id="recently_released_carousel" class="carousel slide">
+        <div class="carousel-inner">
+          {% for video in videos %}
+
+            {% if loop.index0 == 0 %}
+              <div class="item active">
+            {% else %}
+              <div class="item">
+            {% endif %}
+
+                <img src="{{ video['artwork'] }}" alt="{{ video['title'] }}">
+              </div>
+          {% endfor %}
+        </div>
+        <a class="left carousel-control" href="#recently_released_carousel" data-slide="prev">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#recently_released_carousel" data-slide="next">
+          <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="visible-xs visible-sm">
