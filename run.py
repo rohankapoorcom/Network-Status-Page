@@ -1,8 +1,10 @@
 import json
 
-from status import app
-import status
+from status import app, socketio
 from status.functions import Plex
+
+import status
+
 
 def main():
     try:
@@ -20,7 +22,8 @@ def main():
 
     status.config = config
     status.modules['plex'] = Plex(**status.config['plex'])
-    app.run(**status.config['app'])
+
+    socketio.run(app, **status.config['app'])
 
 if __name__ == '__main__':
     main()

@@ -1,12 +1,12 @@
-from status import app
 from flask import render_template
 
+from status import app
+
 import status
-import json
 
 @app.route('/')
 def home():
-    return render_template('index.html', message=status.modules['plex'].get_token())
+    return render_template('index.html')
 
 @app.route('/now_playing/')
 def now_playing():

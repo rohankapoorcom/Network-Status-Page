@@ -1,5 +1,12 @@
 from xml.etree import ElementTree
+from flask import copy_current_request_context
+from flask_socketio import emit
+
+from status import app, socketio
+from status.views import now_playing
+
 import requests
+import gevent
 
 class Plex:
     _STATUS_URL = '/status/sessions'
@@ -78,3 +85,16 @@ class Plex:
     def get_token(self):
         return self._token
 
+@app.before_first_request
+def spawn_greenlet():
+    @copy_current_request_context
+    def greenlet_get_now_playing():
+        while True:
+            socketio.emit('status', {'plex': now_playing()})
+            gevent.sleep(1)
+
+    gevent.spawn(greenlet_get_now_playing)
+
+@socketio.on('connect')
+def client_connect():
+    emit('status', {'plex': now_playing()})

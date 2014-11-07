@@ -1,10 +1,7 @@
-function loadStatus() {
-	loadPlex();
-
-	setTimeout(loadStatus, 15000);
-}
-
-function loadPlex() {
-	url = flask_util.url_for('now_playing');
-	$('#now_playing_wrapper').load(url);
+function setupSocketIO() {
+	var socket = io.connect('http://' + document.domain + ':' + location.port);
+	socket.on('status', function(msg) {
+		$('#now_playing_wrapper').html(msg['plex']);
+	});
+	socket.emit('connect');
 }
