@@ -9,6 +9,10 @@
     {% for video in videos %}
       <div class="thumbnail">
         <img src="{{ video['artwork'] }}" alt="{{ video['title'] }}">
+        <div class="progress now-playing-progress-bar">
+          <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ video['progress'] }}" aria-valuemin="0" aria-valuemax="100" style="{{ 'width: {}%;'.format(video['progress']) }}">
+          </div>
+        </div
         <div class="caption">
 
         {% if video['type'] == 'movie' %}
@@ -19,13 +23,19 @@
           <h4 class="exoextralight skinny-top-margin">E{{ video['episode_number'] }} - {{ video['episode_title'] }}</h4>
           <p class="exolight">{{ video['summary'] }}</p>
         {% endif %}
+
+        {% if video['state'] == 'playing' %}
           <span class="glyphicon glyphicon-play"></span>
+
+        {% else %}
+          <span class="glyphicon glyphicon-pause"></span>
+        {% endif %}
           <p class="exolight skinny-top-margin">{{ video['user'] }}</p>
         </div>
       </div>
 
       {% if loop.revindex0 > 0 %}
-      <hr>
+        <hr>
       {% endif %}
 
     {% endfor %}

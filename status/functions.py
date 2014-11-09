@@ -49,9 +49,11 @@ class Plex:
         video = {}
         metadata_url = unprocessed_video.get('key')
         try:
-            device = unprocessed_video.find('Player').get('title')
+            video['device'] = unprocessed_video.find('Player').get('title')
+            video['state'] = unprocessed_video.find('Player').get('state')
             video['user'] = unprocessed_video.find('User').get('title')
         except AttributeError:
+            # unprocessed_video is not currently being watched
             pass
 
         video_tree = ElementTree.fromstring(
@@ -61,6 +63,15 @@ class Plex:
             )
 
         metadata = video_tree.find('Video')
+        
+        try:
+            duration = float(metadata.get('duration'))
+            view_offset = float(metadata.get('viewOffset'))
+            video['progress'] = '{0:.2f}'.format((view_offset / duration) * 100)
+        except (AttributeError, TypeError):
+            # unproccessed_video is not currently being watched
+            pass
+
         video_type = metadata.get('type')
         video['type'] = video_type
 

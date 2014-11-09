@@ -39,15 +39,18 @@ body {
 /* End of carousel shadow modification */
 
 /* Now Playing Progress Bar CSS */
-.now-playing-progress-bar {
-    height: 5px;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    -webkit-border-radius: 0px;
-       -moz-border-radius: 0px;
-            border-radius: 0px;
+.progress.now-playing-progress-bar {
+  height: 5px;
+  margin-top: 0;
+  margin-bottom: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
 }
 /* End of Now Playing Progress Bar CSS */
+.panel-white-bg {
+  background-color: #ffffff;
+}
 
 .panel-white-bg {
   background-color: #ffffff;
