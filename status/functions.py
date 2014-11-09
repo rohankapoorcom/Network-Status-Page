@@ -159,8 +159,6 @@ class ForecastIO:
     of the API key and latitude/longitude coordinates
     """
 
-    #### Update Forecast every 1.5 minutes
-
     def __init__(self, api_key, latitude, longitude, **kwargs):
         """Initializes an instance of the ForecastIO wrapper"""
         self.api_key = api_key
@@ -247,7 +245,7 @@ def spawn_greenlet():
         while True:
             socketio.emit('forecast', {'data': forecast() })
             gevent.sleep(120)
-            
+
     gevent.spawn(greenlet_get_forecast)
 
 @socketio.on('connect')

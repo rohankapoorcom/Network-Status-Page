@@ -48,6 +48,40 @@ body {
   border-radius: 0;
 }
 /* End of Now Playing Progress Bar CSS */
+
+/* Forecast CSS */
+.sidebar {
+  margin-bottom: -20px;
+}
+
+.weather-icon {
+  font-size: 500%;
+  margin: 0 -10px 20px -5px;
+}
+
+.temperature {
+  margin: 0;
+}
+
+.weather-summary {
+  padding-right: 10px;
+  width: 80px;
+}
+
+.wind-speed {
+  margin-top: 0;
+}
+
+.weather-blurb {
+  margin-top: 10px;
+}
+
+.weather-link {
+  margin-bottom: -10px
+}
+
+/* End of Forecast CSS */
+
 .panel-white-bg {
   background-color: #ffffff;
 }
