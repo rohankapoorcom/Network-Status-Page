@@ -1,0 +1,26 @@
+<ul class="list-inline" style="margin-bottom:-20px">
+	<li><h1 data-icon="{{ weather['icon'] }}" style="font-size:500%;margin:0px -10px 20px -5px"></h1></li>
+	<li>
+		<ul class="list-unstyled">
+			<li><h1 class="exoregular" style="margin:0px">{{ weather['temperature'] }}</h1></li>
+			<li><h4 class="exoregular" style="margin:0px;padding-right:10px;width:80px">{{ weather['summary'] }}</h4></li>
+		</ul>
+	</li>
+</ul>
+
+{% if weather['wind_speed'] > 0 %}
+	<h4 class="exoextralight" style="margin-top:0px">Wind: {{ weather['wind_speed'] }} mph from the {{ weather['wind_bearing'] }}</h4>
+
+{% else %}
+	<h4 class="exoextralight" style="margin-top:0px">Wind: Calm</h4>
+
+{% endif %}
+
+<h4 class="exoregular">Next Hour</h4>
+<h5 class="exoextralight" style="margin-top:10px">{{ weather['minute_summary'] }}</h5>
+<h4 class="exoregular">Next 24 Hours</h4>
+<h5 class="exoextralight" style="margin-top:10px"> {{ weather['hour_summary'] }}</h5>
+<h4 class="exoregular">The Sun</h4>
+<h5 class="exoextralight" style="margin-top:10px">{{ weather['rises'] }} at {{ weather['sunrise_time'] | strftime }}</h5>
+<h5 class="exoextralight" style="margin-top:10px">{{ weather['sets'] }} at {{ weather['sunset_time'] | strftime }}</h5>
+<p class="text-right no-link-color" style="margin-bottom:-10px"><small><a href="{{ weather['url'] }}">Forecast.io</a></small></p>

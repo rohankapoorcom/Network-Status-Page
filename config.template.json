@@ -12,6 +12,12 @@
 	        "server_name": "plex.example.com",
 	        "username": "insert_username_here",
 	        "password": "insert_password_here"
-    	}
+    	},
+        
+        "forecast": {
+            "api_key": "inset_api_key_here",
+            "latitude": 00,
+            "longitude": 00
+        }
     }
 }

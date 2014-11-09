@@ -4,5 +4,10 @@ function setupSocketIO() {
 	socket.on('plex', function(msg) {
 		$('#now_playing_wrapper').html(msg['data']);
 	});
+
+	socket.on('forecast', function(msg) {
+		$('#left_column_top').html(msg['data']);
+	});
+
 	socket.emit('connect');
 }

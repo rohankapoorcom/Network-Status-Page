@@ -5,12 +5,14 @@ Contains functions and classes needed for processing the Network Status Page
 from xml.etree import ElementTree
 from flask import copy_current_request_context
 from flask_socketio import emit
+from datetime import datetime
 
 from status import app, socketio
-from status.views import now_playing, recently_released
+from status.views import now_playing, recently_released, forecast
 
 import requests
 import gevent
+import forecastio
 
 class Plex:
     """Contains the functionality needed to communicate with a Plex server"""
@@ -151,14 +153,76 @@ class Plex:
         """Returns the authentication token"""
         return self._token
 
+class ForecastIO:
+    """
+    A Wrapper for the python-forecastio package allowing one time loading
+    of the API key and latitude/longitude coordinates
+    """
+
+    #### Update Forecast every 1.5 minutes
+
+    def __init__(self, api_key, latitude, longitude, **kwargs):
+        """Initializes an instance of the ForecastIO wrapper"""
+        self.api_key = api_key
+        self.latitude = latitude
+        self.longitude = longitude
+        self.forecast = forecastio.load_forecast(self.api_key, self.latitude, self.longitude)
+
+    def get_direction(self, bearing):
+        directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N']
+        return directions[int(round(bearing/45))]
+
+    def get_icon_code(self, icon):
+        weather_icons = {
+            'clear-day': 'B',
+            'clear-night': 'C',
+            'rain': 'R',
+            'snow': 'W',
+            'sleet': 'X',
+            'wind': 'F',
+            'fog': 'L',
+            'cloudy': 'N',
+            'partly-cloudy-day': 'H',
+            'partly-cloudy-night': 'I'
+        }
+
+        return weather_icons[icon]
+
+    def get_forecast(self):
+        """
+        Returns a dictionary containing the weather information we want to
+        display
+        """
+        weather = {}
+        current = self.forecast.currently().d
+        daily = self.forecast.daily()
+
+        weather['summary'] = current['summary']
+        weather['icon'] = self.get_icon_code(current['icon'])
+        weather['temperature'] = int(round(current['temperature']))
+        weather['wind_speed'] = int(round(current['windSpeed']))
+        weather['wind_bearing'] = self.get_direction(round(current['windBearing']))
+        weather['minute_summary'] = self.forecast.minutely().summary
+        weather['hour_summary'] = self.forecast.hourly().summary
+        weather['sunrise_time'] = daily.data[0].sunriseTime
+        weather['sunset_time'] = daily.data[0].sunsetTime
+        weather['rises'] = 'Rises' if weather['sunrise_time'] > datetime.now() else 'Rose'
+        weather['sets'] = 'Sets' if weather['sunset_time'] > datetime.now() else 'Set'
+        weather['url'] = 'http://forecast.io/#/f/{},{}'.format(self.latitude, self.longitude)
+
+        return weather
+
 @app.before_first_request
 def spawn_greenlet():
-    """
-    Spawns a greenlet to communicate with Plex every second to update
-    the now playing information via SocketIO
-    """
+    """Spawns greenlets to update information from modules via SocketIO"""
+
     @copy_current_request_context
     def greenlet_get_now_playing():
+        """
+        A greenlet that communicates with Plex every second to update
+        the now playing information via SocketIO
+        """
+
         last_now_playing = True
         while True:
             cur = now_playing()
@@ -173,10 +237,24 @@ def spawn_greenlet():
 
     gevent.spawn(greenlet_get_now_playing)
 
+    @copy_current_request_context
+    def greenlet_get_forecast():
+        """
+        A greenlet that communicates with Forecast.io every 2 minutes to
+        update the weather information via SocketIO
+        """
+
+        while True:
+            socketio.emit('forecast', {'data': forecast() })
+            gevent.sleep(120)
+            
+    gevent.spawn(greenlet_get_forecast)
+
 @socketio.on('connect')
 def client_connect():
     """
-    Send the now playing information via SocketIO to new clients as
+    Send the current information via SocketIO to new clients as
     they connect to the server
     """
     emit('plex', {'data': recently_released() if not now_playing() else now_playing() })
+    emit('forecast', {'data': forecast() })

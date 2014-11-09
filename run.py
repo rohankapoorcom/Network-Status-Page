@@ -5,7 +5,7 @@ This has to be run from one level above the package
 import json
 
 from status import app, socketio
-from status.functions import Plex
+from status.functions import Plex, ForecastIO
 
 import status
 
@@ -29,7 +29,8 @@ def main():
 
     status.config = config
     status.modules['plex'] = Plex(**status.config['plex'])
-
+    status.modules['forecast'] = ForecastIO(**status.config['forecast'])
+    
     socketio.run(app, **status.config['app'])
 
 if __name__ == '__main__':
