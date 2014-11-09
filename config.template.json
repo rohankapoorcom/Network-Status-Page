@@ -1,24 +1,12 @@
 {
-    "environment": "development",
+    "environment": "production",
 
     "production": {
     	"app": {
             "port": 5050,
     		"host": "0.0.0.0"
     	},
-    	"plex": {
-    		"api_token_uri": "https://my.plexapp.com/users/sign_in.xml",
-	        "server_name": "plex.example.com",
-	        "username": "insert_username_here",
-	        "password": "insert_password_here"
-    	}
-    },
 
-    "development": {
-        "app": {
-        	"port": 5050,
-            "host": "0.0.0.0"
-    	},
     	"plex": {
     		"api_token_uri": "https://my.plexapp.com/users/sign_in.xml",
 	        "server_name": "plex.example.com",

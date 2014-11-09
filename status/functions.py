@@ -5,7 +5,6 @@ Contains functions and classes needed for processing the Network Status Page
 from xml.etree import ElementTree
 from flask import copy_current_request_context
 from flask_socketio import emit
-from random import shuffle
 
 from status import app, socketio
 from status.views import now_playing, recently_released
@@ -165,11 +164,11 @@ def spawn_greenlet():
             cur = now_playing()
             if not cur:
                 if last_now_playing:
-                    socketio.emit('status', {'plex': recently_released()})
+                    socketio.emit('plex', {'data': recently_released() })
                     last_now_playing = False
             else:
                 last_now_playing = True
-                socketio.emit('status', {'plex': cur})
+                socketio.emit('plex', {'data': cur})
             gevent.sleep(1)
 
     gevent.spawn(greenlet_get_now_playing)
@@ -180,4 +179,4 @@ def client_connect():
     Send the now playing information via SocketIO to new clients as
     they connect to the server
     """
-    emit('status', {'plex': recently_released() if not now_playing() else now_playing() })
+    emit('plex', {'data': recently_released() if not now_playing() else now_playing() })
