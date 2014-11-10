@@ -7,7 +7,7 @@ from flask import copy_current_request_context
 from flask_socketio import emit
 from datetime import datetime
 
-from status import app, socketio
+from status import app, socketio, modules
 from status.views import now_playing, recently_released, forecast
 
 import requests
@@ -210,6 +210,9 @@ class ForecastIO:
 
         return weather
 
+    def update(self):
+        self.forecast.update()
+
 @app.before_first_request
 def spawn_greenlet():
     """Spawns greenlets to update information from modules via SocketIO"""
@@ -245,6 +248,7 @@ def spawn_greenlet():
         while True:
             socketio.emit('forecast', {'data': forecast() })
             gevent.sleep(120)
+            modules['forecast'].update()
 
     gevent.spawn(greenlet_get_forecast)
 
