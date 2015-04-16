@@ -35,7 +35,7 @@ class Plex:
             'Content-Length' : 0,
             'X-Plex-Client-Identifier': __name__
         }
-        
+
         tree = ElementTree.fromstring(
             requests.post(
                 self._token_url,
@@ -165,6 +165,7 @@ class Plex:
             params=self._payload
         )
 
+
 class ForecastIO:
     """
     A Wrapper for the python-forecastio package allowing one time loading
@@ -173,10 +174,10 @@ class ForecastIO:
 
     def __init__(self, api_key, latitude, longitude, **kwargs):
         """Initializes an instance of the ForecastIO wrapper"""
-        self.api_key = api_key
-        self.latitude = latitude
-        self.longitude = longitude
-        self.forecast = forecastio.load_forecast(self.api_key, self.latitude, self.longitude)
+        self._api_key = api_key
+        self._latitude = latitude
+        self._longitude = longitude
+        self._forecast = forecastio.load_forecast(self._api_key, self._latitude, self._longitude)
 
     def get_direction(self, bearing):
         directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N']
@@ -204,26 +205,27 @@ class ForecastIO:
         display
         """
         weather = {}
-        current = self.forecast.currently().d
-        daily = self.forecast.daily()
+        current = self._forecast.currently().d
+        daily = self._forecast.daily()
 
         weather['summary'] = current['summary']
         weather['icon'] = self.get_icon_code(current['icon'])
         weather['temperature'] = int(round(current['temperature']))
         weather['wind_speed'] = int(round(current['windSpeed']))
         weather['wind_bearing'] = self.get_direction(round(current['windBearing']))
-        weather['minute_summary'] = self.forecast.minutely().summary
-        weather['hour_summary'] = self.forecast.hourly().summary
+        weather['minute_summary'] = self._forecast.minutely().summary
+        weather['hour_summary'] = self._forecast.hourly().summary
         weather['sunrise_time'] = daily.data[0].sunriseTime
         weather['sunset_time'] = daily.data[0].sunsetTime
         weather['rises'] = 'Rises' if weather['sunrise_time'] > datetime.now() else 'Rose'
         weather['sets'] = 'Sets' if weather['sunset_time'] > datetime.now() else 'Set'
-        weather['url'] = 'http://forecast.io/#/f/{},{}'.format(self.latitude, self.longitude)
+        weather['url'] = 'http://forecast.io/#/f/{},{}'.format(self._latitude, self._longitude)
 
         return weather
 
     def update(self):
-        self.forecast.update()
+        self._forecast.update()
+
 
 @app.before_first_request
 def spawn_greenlet():
@@ -258,7 +260,7 @@ def spawn_greenlet():
         """
 
         while True:
-            socketio.emit('forecast', {'data': forecast() })
+            socketio.emit('forecast', {'data': forecast()})
             gevent.sleep(120)
             modules['forecast'].update()
 
@@ -270,5 +272,5 @@ def client_connect():
     Send the current information via SocketIO to new clients as
     they connect to the server
     """
-    emit('plex', {'data': recently_released() if not now_playing() else now_playing() })
-    emit('forecast', {'data': forecast() })
+    emit('plex', {'data': recently_released() if not now_playing() else now_playing()})
+    emit('forecast', {'data': forecast()})
