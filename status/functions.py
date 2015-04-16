@@ -66,7 +66,7 @@ class Plex:
             )
 
         metadata = video_tree.find('Video')
-        
+
         try:
             duration = float(metadata.get('duration'))
             view_offset = float(metadata.get('viewOffset'))
@@ -131,8 +131,7 @@ class Plex:
         return ['{}{}'.format(
             self._server,
             Plex._RELEASED_URL.format(
-                directory.get('key')
-            )
+                directory.get('key'))
         ) for directory in directories]
 
     def get_recently_released_videos(self):
@@ -180,10 +179,12 @@ class ForecastIO:
         self._forecast = forecastio.load_forecast(self._api_key, self._latitude, self._longitude)
 
     def get_direction(self, bearing):
+        """Converts a bearing to written direction"""
         directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N']
         return directions[int(round(bearing/45))]
 
     def get_icon_code(self, icon):
+        """Converts a weather icon to the character that represents it"""
         weather_icons = {
             'clear-day': 'B',
             'clear-night': 'C',
@@ -224,7 +225,85 @@ class ForecastIO:
         return weather
 
     def update(self):
+        """Updates the forecast information"""
         self._forecast.update()
+
+
+class PfSense:
+    """
+    Contains the functionality needed to communicate with a pfSense firewall
+    """
+
+    def __init__(self, hostname, username, password, interfaces, **kwargs):
+        """Initializes the pfSense firewall communication"""
+        self._hostname = hostname
+        self._username = username
+        self._password = password
+        self._interfaces = interfaces
+        self._client = paramiko.SSHClient()
+        self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._client.connect(self._hostname, username=self._username, password=self._password)
+        self.get_current_bandwidth_stats()
+
+    def get_current_bandwidth_usage_on_interface(self, interface_name):
+        """
+        Connects to pfSense and fetches the current amount of traffic passing
+        through the specified interface_name
+        """
+        stdin, stdout, stderr = self._client.exec_command('vnstat -i {} -tr'.format(interface_name))
+        output = stdout.readlines()
+        dl_speed_line = str(output[-3])
+        ul_speed_line = str(output[-2])
+
+        pattern = re.compile(r'\b[r,t]x\ *(?P<speed>\d*.\d*) (?P<units>[a-zA-z]*/s)')
+
+        match = re.search(pattern, dl_speed_line)
+        dl_speed = float(match.group('speed'))
+        if match.group('units') == 'kbit/s':
+            dl_speed /= 1024
+        dl_speed = round(dl_speed, 2)
+
+        match = re.search(pattern, ul_speed_line)
+        ul_speed = float(match.group('speed'))
+        if match.group('units') == 'kbit/s':
+            ul_speed /= 1024
+        ul_speed = round(ul_speed, 2)
+
+        return (round(dl_speed, 2), round(ul_speed, 2))
+
+    def get_current_bandwidth_stats(self):
+        """
+        Loops through all interfaces and gets the amount of traffic passing
+        through each of them
+        """
+        for interface in self._interfaces:
+            interface['dl_speed'], interface['ul_speed'] = self.get_current_bandwidth_usage_on_interface(interface['name'])
+            interface['dl_usage'] = 100 * interface['dl_speed'] / interface['max_dl_speed']
+            interface['ul_usage'] = 100 * interface['ul_speed'] / interface['max_ul_speed']
+            interface['ping'] = self.get_current_ping_time_on_interface(interface)
+
+    def get_current_ping_time_on_interface(self, interface):
+        """
+        Connects to pfSense and gets the average ping time to the specified
+        ip address
+        """
+        stdin, stdout, stderr = self._client.exec_command('ping -S {} -t 5 {}'.format(
+            interface['ip'], interface['ping_ip']))
+        output = stdout.readlines()
+        avg_ping_line = str(output[-1])
+
+        pattern = re.compile(r'\d+.\d*\/(?P<average>\d+.\d*)')
+
+        match = re.search(pattern, avg_ping_line)
+        avg_ping = int(round(float(match.group('average')), 0))
+        return avg_ping
+
+    def get_interfaces(self):
+        """
+        Returns a list containing all of the interfaces that we are monitoring
+        with the bandwidth usage and ping information appended
+        """
+        return self._interfaces
 
 
 @app.before_first_request
@@ -243,7 +322,7 @@ def spawn_greenlet():
             cur = now_playing()
             if not cur:
                 if last_now_playing:
-                    socketio.emit('plex', {'data': recently_released() })
+                    socketio.emit('plex', {'data': recently_released()})
                     last_now_playing = False
             else:
                 last_now_playing = True

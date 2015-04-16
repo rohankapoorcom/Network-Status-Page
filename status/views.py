@@ -6,10 +6,12 @@ from status import app
 
 import status
 
+
 @app.route('/')
 def home():
     """Loads the network status page"""
     return render_template('index.html')
+
 
 @app.route('/image/')
 def fetch_image():
@@ -20,6 +22,7 @@ def fetch_image():
     response.headers['Content-Type'] = req.headers['Content-Type']
     return response
 
+
 def now_playing():
     """Renders the now playing portion of the network status page"""
     videos = status.modules['plex'].get_currently_playing_videos()
@@ -27,10 +30,12 @@ def now_playing():
         return False
     return render_template('now_playing.html', videos=videos)
 
+
 def recently_released():
     """Renders the recently released portion of the network status page"""
     videos = status.modules['plex'].get_recently_released_videos()
     return render_template('recently_released.html', videos=videos)
+
 
 def forecast():
     """Renders the forecast portion of the network status page"""

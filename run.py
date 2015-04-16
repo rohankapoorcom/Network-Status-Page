@@ -18,7 +18,7 @@ def main():
             config = json.load(config_file)
     except IOError:
         exit('Missing Config File: config.json')
-    
+
     env = config.get('environment', '')
     if not env:
         exit('Missing environment in config.json')
