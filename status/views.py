@@ -1,6 +1,6 @@
 """Contains the Flask views"""
 
-from flask import render_template
+from flask import render_template, request, make_response
 
 from status import app
 
@@ -10,6 +10,15 @@ import status
 def home():
     """Loads the network status page"""
     return render_template('index.html')
+
+@app.route('/image/')
+def fetch_image():
+    """Loads and returns the requested image"""
+    url = request.args.get('image')
+    req = status.modules['plex'].get_image_from_plex(url)
+    response = make_response(req.content)
+    response.headers['Content-Type'] = req.headers['Content-Type']
+    return response
 
 def now_playing():
     """Renders the now playing portion of the network status page"""

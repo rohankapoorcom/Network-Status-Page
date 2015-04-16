@@ -3,7 +3,7 @@ Contains functions and classes needed for processing the Network Status Page
 """
 
 from xml.etree import ElementTree
-from flask import copy_current_request_context
+from flask import copy_current_request_context, url_for
 from flask_socketio import emit
 from datetime import datetime
 
@@ -11,6 +11,7 @@ from status import app, socketio, modules
 from status.views import now_playing, recently_released, forecast
 
 import requests
+import grequests
 import gevent
 import forecastio
 
@@ -43,7 +44,7 @@ class Plex:
                 ).content
             )
 
-        self._token = tree.get('authenticationToken')
+        self._payload = {'X-Plex-Token': tree.get('authenticationToken')}
 
     def process_currently_playing_video(self, unprocessed_video):
         """Returns a dictionary containing information regarding the provided video"""
@@ -59,7 +60,8 @@ class Plex:
 
         video_tree = ElementTree.fromstring(
             requests.get(
-                '{}{}'.format(self._server, metadata_url)
+                '{}{}'.format(self._server, metadata_url),
+                params=self._payload
                 ).content
             )
 
@@ -77,26 +79,25 @@ class Plex:
         video['type'] = video_type
 
         if (video_type == 'movie'):
-            video['artwork'] = '{}{}'.format(
-                self._server,
-                metadata.get('thumb')
-                )
+            thumb = metadata.get('thumb')
 
             video['title'] = metadata.get('title')
             summary = metadata.get('summary')
             video['summary'] = (summary[:800] + '...') if len(summary) > 800 else summary
 
         elif (video_type == 'episode'):
-            video['artwork'] = '{}{}'.format(
-                self._server,
-                metadata.get('thumb') if not metadata.get('grandparentThumb') else metadata.get('grandparentThumb')
-                )
+            thumb = metadata.get('thumb') if not metadata.get('grandparentThumb') else metadata.get('grandparentThumb')
 
             video['title'] = metadata.get('grandparentTitle')
             video['episode_title'] = metadata.get('title')
             video['summary'] = metadata.get('summary')
             video['season'] = metadata.get('parentIndex')
             video['episode_number'] = metadata.get('index')
+
+        video['artwork'] = url_for(
+            'fetch_image',
+            image=thumb
+        )
 
         return video
 
@@ -107,7 +108,8 @@ class Plex:
         """
         tree = ElementTree.fromstring(
             requests.get(
-                '{}{}'.format(self._server, Plex._STATUS_URL)
+                '{}{}'.format(self._server, Plex._STATUS_URL),
+                params=self._payload
             ).content
         )
 
@@ -120,7 +122,8 @@ class Plex:
         """Returns a list of urls of libraries to get recently playing videos"""
         section_tree = ElementTree.fromstring(
             requests.get(
-                '{}{}'.format(self._server, Plex._LIBRARY_URL)
+                '{}{}'.format(self._server, Plex._LIBRARY_URL),
+                params=self._payload
             ).content
         )
 
@@ -128,7 +131,7 @@ class Plex:
         return ['{}{}'.format(
             self._server,
             Plex._RELEASED_URL.format(
-                directory.find('Location').get('id')
+                directory.get('key')
             )
         ) for directory in directories]
 
@@ -141,17 +144,26 @@ class Plex:
         processed_videos = []
         for section in sections:
             video_tree = ElementTree.fromstring(
-                requests.get(section).content
+                requests.get(
+                    section,
+                    params=self._payload
+                ).content
             )
 
             videos = video_tree.findall('Video')
-            processed_videos.extend(self.process_currently_playing_video(video) for video in videos)
+            processed_videos.extend(self.process_currently_playing_video(video) for video in videos[:5])
 
         return processed_videos
- 
-    def get_token(self):
-        """Returns the authentication token"""
-        return self._token
+
+    def get_image_from_plex(self, image_url):
+        """
+        Returns a raw response from a request to plex to fetch
+        the image to be displayed
+        """
+        return requests.get(
+            '{}{}'.format(self._server, image_url),
+            params=self._payload
+        )
 
 class ForecastIO:
     """
