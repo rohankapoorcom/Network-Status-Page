@@ -15,9 +15,25 @@
     	},
         
         "forecast": {
-            "api_key": "inset_api_key_here",
+            "api_key": "insert_api_key_here",
             "latitude": 00,
             "longitude": 00
+        },
+
+        "pfsense": {
+            "hostname": "firewall.example.com",
+            "username": "insert_username_here",
+            "password": "insert_password_here",
+            "interfaces": [ 
+                {
+                    "name": "machine_interface_name",
+                    "readable_name": "human_readable_name",
+                    "ip": "external_ip_of_interface",
+                    "ping_ip": "ip_to_test_connectivity",
+                    "max_dl_speed": 00,
+                    "max_ul_speed": 00
+                }
+            ]
         }
     }
 }

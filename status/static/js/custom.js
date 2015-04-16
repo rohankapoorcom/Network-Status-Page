@@ -9,5 +9,9 @@ function setupSocketIO() {
 		$('#left_column_top').html(msg['data']);
 	});
 
+	socket.on('bandwidth', function(msg) {
+		$('#bandwidth').html(msg['data']);
+	});
+
 	socket.emit('connect');
 }

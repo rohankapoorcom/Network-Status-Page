@@ -1,0 +1,22 @@
+{% for interface in interfaces %}
+	<div class="exolight">
+		{{ interface['readable_name'] }} Ping: {{ interface['ping'] }} ms
+		<br><br>
+		<!-- Download -->
+		<div class="exolight">
+			Download: {{ interface['dl_speed'] }} Mbps
+			<div class="progress">
+				<div class="progress-bar" style="{{ 'width: {}%'.format(interface['dl_usage']) }}">
+				</div>
+			</div>
+		</div>
+		<!-- Upload -->
+		<div class="exolight">Upload: {{ interface['ul_speed'] }} Mbps
+			<div class="progress">
+				<div class="progress-bar" style="{{ 'width: {}%'.format(interface['ul_usage']) }}">
+				</div>
+			</div>
+		</div>
+		<br>
+	</div>
+{% endfor %}

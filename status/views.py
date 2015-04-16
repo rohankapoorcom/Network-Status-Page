@@ -42,6 +42,13 @@ def forecast():
     weather = status.modules['forecast'].get_forecast()
     return render_template('forecast.html', weather=weather)
 
+
+def bandwidth():
+    """Renders the bandwidth portion of the network status page"""
+    interfaces = status.modules['pfsense'].get_interfaces()
+    return render_template('bandwidth.html', interfaces=interfaces)
+
+
 @app.template_filter('strftime')
 def _jinja2_filter_datetimeformat(value, format='%I:%M %p'):
     """Allows Jinja templates to reformat datetime objects"""

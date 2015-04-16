@@ -6,14 +6,18 @@ from xml.etree import ElementTree
 from flask import copy_current_request_context, url_for
 from flask_socketio import emit
 from datetime import datetime
+from paramiko import SSHClient
 
 from status import app, socketio, modules
-from status.views import now_playing, recently_released, forecast
+from status.views import now_playing, recently_released, forecast, bandwidth
 
 import requests
 import grequests
 import gevent
 import forecastio
+import paramiko
+import re
+
 
 class Plex:
     """Contains the functionality needed to communicate with a Plex server"""
@@ -345,6 +349,21 @@ def spawn_greenlet():
 
     gevent.spawn(greenlet_get_forecast)
 
+    @copy_current_request_context
+    def greenlet_get_bandwidth():
+        """
+        A greenlet that communicates with pfSense every 15 seconds to update
+        the bandwidth information via SocketIO
+        """
+
+        while True:
+            socketio.emit('bandwidth', {'data': bandwidth()})
+            gevent.sleep(15)
+            modules['pfsense'].get_current_bandwidth_stats()
+
+    gevent.spawn(greenlet_get_bandwidth())
+
+
 @socketio.on('connect')
 def client_connect():
     """
@@ -353,3 +372,4 @@ def client_connect():
     """
     emit('plex', {'data': recently_released() if not now_playing() else now_playing()})
     emit('forecast', {'data': forecast()})
+    emit('bandwidth', {'data': bandwidth()})
