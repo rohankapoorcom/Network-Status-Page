@@ -3,6 +3,7 @@ Launcher for the status package.
 This has to be run from one level above the package
 """
 import json
+import os
 
 from status import app, socketio
 from status.functions import Plex, ForecastIO, PfSense
@@ -15,7 +16,9 @@ def main():
     Loads the configuration from JSON and initializes the necessary modules
     """
     try:
-        with open('config.json', 'r') as config_file:
+        path = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(path, 'config.json')
+        with open(config_path, 'r') as config_file:
             config = json.load(config_file)
     except IOError:
         exit('Missing Config File: config.json')

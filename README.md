@@ -9,14 +9,16 @@ Designed to monitor an advanced home work with forecast.io, Plex, and pfSense in
 * Designed using [Bootstrap 3](http://getbootstrap.com/)
 * Built with [Flask](http://flask.pocoo.org/)
 * Uses SocketIO to provide real-time updates to all connected clients
+* Tested on Windows/Linux but should also be compatible with OSX
 
 
 ### Requirements
 ---------------
 * Plex Media Server
+* pfSense Firewall with the vnstat package installed
 * Forecast.io API key
 * Linux server
-* Python 2
+* Python 2.7
 
 ### Optional
 ---------------
@@ -24,6 +26,17 @@ Designed to monitor an advanced home work with forecast.io, Plex, and pfSense in
 
 ### Usage
 ---------------
+* Download and unzip the [latest build](https://github.com/rohankapoorcom/Network-Status-Page/archive/master.zip)
+* Open a terminal and go to the folder where you unzipped the build
+* Create a virtualenvironment and use pip to install all of the required packages
+
+	```
+	virtualenv venv
+	source venv/bin/activate
+	pip install -r requirements.txt
+	```
+* Copy config.template.json to config.json and fill in your configuration details
+* Start Network Status Page by executing ```python run.py```
 
 ### Inspiration
 ---------------
