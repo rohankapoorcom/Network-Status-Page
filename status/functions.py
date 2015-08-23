@@ -36,7 +36,7 @@ class Plex:
     def fetch_token(self):
         """Fetch's the Plex authentication token"""
         headers = {
-            'Content-Length' : 0,
+            'Content-Length': 0,
             'X-Plex-Client-Identifier': __name__
         }
 
