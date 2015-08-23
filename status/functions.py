@@ -6,13 +6,11 @@ from xml.etree import ElementTree
 from flask import copy_current_request_context, url_for
 from flask_socketio import emit
 from datetime import datetime
-from paramiko import SSHClient
 
 from status import app, socketio, modules
 from status.views import now_playing, recently_released, forecast, bandwidth
 
 import requests
-import grequests
 import gevent
 import forecastio
 import paramiko
@@ -25,7 +23,8 @@ class Plex:
     _LIBRARY_URL = '/library/sections'
     _RELEASED_URL = '/library/sections/{}/newest'
 
-    def __init__(self, username, password, server_name, api_token_uri, **kwargs):
+    def __init__(
+            self, username, password, server_name, api_token_uri, **kwargs):
         """Initializes the Plex server communication"""
         self._username = username
         self._password = password
@@ -45,13 +44,15 @@ class Plex:
                 self._token_url,
                 auth=(self._username, self._password),
                 headers=headers
-                ).content
-            )
+            ).content
+        )
 
         self._payload = {'X-Plex-Token': tree.get('authenticationToken')}
 
     def process_currently_playing_video(self, unprocessed_video):
-        """Returns a dictionary containing information regarding the provided video"""
+        """
+        Returns a dictionary containing information for the provided video
+        """
         video = {}
         metadata_url = unprocessed_video.get('key')
         try:
@@ -66,15 +67,16 @@ class Plex:
             requests.get(
                 '{}{}'.format(self._server, metadata_url),
                 params=self._payload
-                ).content
-            )
+            ).content
+        )
 
         metadata = video_tree.find('Video')
 
         try:
             duration = float(metadata.get('duration'))
             view_offset = float(metadata.get('viewOffset'))
-            video['progress'] = '{0:.2f}'.format((view_offset / duration) * 100)
+            video['progress'] = '{0:.2f}'.format(
+                (view_offset / duration) * 100)
         except (AttributeError, TypeError):
             # unproccessed_video is not currently being watched
             pass
@@ -87,7 +89,8 @@ class Plex:
 
             video['title'] = metadata.get('title')
             summary = metadata.get('summary')
-            video['summary'] = (summary[:800] + '...') if len(summary) > 800 else summary
+            video['summary'] = (
+                summary[:800] + '...') if len(summary) > 800 else summary
 
         elif (video_type == 'episode'):
             thumb = metadata.get('thumb') if not metadata.get('grandparentThumb') else metadata.get('grandparentThumb')
@@ -120,10 +123,13 @@ class Plex:
         videos = tree.findall('Video')
         if not videos:
             return []
-        return [self.process_currently_playing_video(video) for video in videos]
+        return [
+            self.process_currently_playing_video(video) for video in videos]
 
     def get_libraries_to_scan(self):
-        """Returns a list of urls of libraries to get recently playing videos"""
+        """
+        Returns a list of urls of libraries to get recently playing videos
+        """
         section_tree = ElementTree.fromstring(
             requests.get(
                 '{}{}'.format(self._server, Plex._LIBRARY_URL),
@@ -154,7 +160,9 @@ class Plex:
             )
 
             videos = video_tree.findall('Video')
-            processed_videos.extend(self.process_currently_playing_video(video) for video in videos[:5])
+            processed_videos.extend(
+                self.process_currently_playing_video(
+                    video) for video in videos[:5])
 
         return processed_videos
 
@@ -180,12 +188,13 @@ class ForecastIO:
         self._api_key = api_key
         self._latitude = latitude
         self._longitude = longitude
-        self._forecast = forecastio.load_forecast(self._api_key, self._latitude, self._longitude)
+        self._forecast = forecastio.load_forecast(
+            self._api_key, self._latitude, self._longitude)
 
     def get_direction(self, bearing):
         """Converts a bearing to written direction"""
         directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N']
-        return directions[int(round(bearing/45))]
+        return directions[int(round(bearing / 45))]
 
     def get_icon_code(self, icon):
         """Converts a weather icon to the character that represents it"""
@@ -217,14 +226,16 @@ class ForecastIO:
         weather['icon'] = self.get_icon_code(current['icon'])
         weather['temperature'] = int(round(current['temperature']))
         weather['wind_speed'] = int(round(current['windSpeed']))
-        weather['wind_bearing'] = self.get_direction(round(current['windBearing']))
+        weather['wind_bearing'] = self.get_direction(
+            round(current['windBearing']))
         weather['minute_summary'] = self._forecast.minutely().summary
         weather['hour_summary'] = self._forecast.hourly().summary
         weather['sunrise_time'] = daily.data[0].sunriseTime
         weather['sunset_time'] = daily.data[0].sunsetTime
-        weather['rises'] = 'Rises' if weather['sunrise_time'] > datetime.now() else 'Rose'
+        weather['rises'] = ('Rises' if weather['sunrise_time'] > datetime.now() else 'Rose')
         weather['sets'] = 'Sets' if weather['sunset_time'] > datetime.now() else 'Set'
-        weather['url'] = 'http://forecast.io/#/f/{},{}'.format(self._latitude, self._longitude)
+        weather['url'] = 'http://forecast.io/#/f/{},{}'.format(
+            self._latitude, self._longitude)
 
         return weather
 
@@ -246,7 +257,8 @@ class PfSense:
         self._interfaces = interfaces
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._client.connect(self._hostname, username=self._username, password=self._password)
+        self._client.connect(
+            self._hostname, username=self._username, password=self._password)
         self.get_current_bandwidth_stats()
 
     def get_current_bandwidth_usage_on_interface(self, interface_name):
@@ -254,12 +266,14 @@ class PfSense:
         Connects to pfSense and fetches the current amount of traffic passing
         through the specified interface_name
         """
-        stdin, stdout, stderr = self._client.exec_command('vnstat -i {} -tr'.format(interface_name))
+        stdin, stdout, stderr = self._client.exec_command(
+            'vnstat -i {} -tr'.format(interface_name))
         output = stdout.readlines()
         dl_speed_line = str(output[-3])
         ul_speed_line = str(output[-2])
 
-        pattern = re.compile(r'\b[r,t]x\ *(?P<speed>\d*.\d*) (?P<units>[a-zA-z]*/s)')
+        pattern = re.compile(
+            r'\b[r,t]x\ *(?P<speed>\d*.\d*) (?P<units>[a-zA-z]*/s)')
 
         match = re.search(pattern, dl_speed_line)
         dl_speed = float(match.group('speed'))
@@ -291,8 +305,9 @@ class PfSense:
         Connects to pfSense and gets the average ping time to the specified
         ip address
         """
-        stdin, stdout, stderr = self._client.exec_command('ping -S {} -t 5 {}'.format(
-            interface['ip'], interface['ping_ip']))
+        stdin, stdout, stderr = self._client.exec_command(
+            'ping -S {} -t 5 {}'.format(
+                interface['ip'], interface['ping_ip']))
         output = stdout.readlines()
         avg_ping_line = str(output[-1])
 
@@ -370,6 +385,7 @@ def client_connect():
     Send the current information via SocketIO to new clients as
     they connect to the server
     """
-    emit('plex', {'data': recently_released() if not now_playing() else now_playing()})
+    emit('plex', {
+        'data': recently_released() if not now_playing() else now_playing()})
     emit('forecast', {'data': forecast()})
     emit('bandwidth', {'data': bandwidth()})
