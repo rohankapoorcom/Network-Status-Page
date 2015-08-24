@@ -13,5 +13,9 @@ function setupSocketIO() {
 		$('#bandwidth').html(msg['data']);
 	});
 
+	socket.on('services', function(msg) {
+		$('#services').html(msg['data']);
+	});
+
 	socket.emit('connect');
 }

@@ -5,10 +5,9 @@ This has to be run from one level above the package
 import json
 import os
 
-from status import app, socketio
-from status.functions import Plex, ForecastIO, PfSense
-
 import status
+from status import app, socketio
+from status.functions import ForecastIO, PfSense, Plex, Services
 
 
 def main():
@@ -35,6 +34,7 @@ def main():
     status.modules['plex'] = Plex(**status.config['plex'])
     status.modules['forecast'] = ForecastIO(**status.config['forecast'])
     status.modules['pfsense'] = PfSense(**status.config['pfsense'])
+    status.modules['services'] = Services(status.config['services'])
 
     socketio.run(app, **status.config['app'])
 

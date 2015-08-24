@@ -2,19 +2,21 @@
 Contains functions and classes needed for processing the Network Status Page
 """
 
+import re
+import urllib
+from datetime import datetime
 from xml.etree import ElementTree
+
+import forecastio
+import gevent
+import paramiko
+import requests
 from flask import copy_current_request_context, url_for
 from flask_socketio import emit
-from datetime import datetime
 
-from status import app, socketio, modules
-from status.views import now_playing, recently_released, forecast, bandwidth
-
-import requests
-import gevent
-import forecastio
-import paramiko
-import re
+from status import app, modules, socketio
+from status.views import (bandwidth, forecast, now_playing, recently_released,
+                          services)
 
 
 class Plex:
@@ -325,6 +327,27 @@ class PfSense:
         return self._interfaces
 
 
+class Services:
+
+    def __init__(self, service_list):
+        """
+        Initializes the services class and stores information about
+        the services to check
+        """
+        self._service_list = service_list
+        self.update_status()
+
+    def update_status(self):
+        """Updates the status of all services"""
+        for service in self._service_list:
+            url = "{}:{}".format(service['hostname'], service['port'])
+            service['status'] = True if urllib.urlopen(url).getcode() == 200 else False
+
+    def get_status(self):
+        """Returns the service list"""
+        return self._service_list
+
+
 @app.before_first_request
 def spawn_greenlet():
     """Spawns greenlets to update information from modules via SocketIO"""
@@ -378,6 +401,18 @@ def spawn_greenlet():
 
     gevent.spawn(greenlet_get_bandwidth())
 
+    @copy_current_request_context
+    def greenlet_get_services():
+        """
+        A greenlet that checks service status every 2 minutes to update
+        status via SocketIO
+        """
+
+        while True:
+            socketio.emit('services', {'data': services()})
+            gevent.sleep(120)
+            modules['services'].update_status()
+
 
 @socketio.on('connect')
 def client_connect():
@@ -389,3 +424,4 @@ def client_connect():
         'data': recently_released() if not now_playing() else now_playing()})
     emit('forecast', {'data': forecast()})
     emit('bandwidth', {'data': bandwidth()})
+    emit('services', {'data': services()})

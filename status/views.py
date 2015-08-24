@@ -49,7 +49,30 @@ def bandwidth():
     return render_template('bandwidth.html', interfaces=interfaces)
 
 
+def services():
+    """Renders the services portion of the network status page"""
+    service_list = status.modules['services'].get_status()
+    return render_template('services.html', service_list=service_list)
+
+
 @app.template_filter('strftime')
 def _jinja2_filter_datetimeformat(value, format='%I:%M %p'):
     """Allows Jinja templates to reformat datetime objects"""
     return value.strftime(format)
+
+
+@app.template_filter('button_style')
+def _jinja2_filter_button_style(value):
+    """Formats the button style for templates"""
+    return 'success' if value else 'warning'
+
+
+@app.template_filter('icon_style')
+def _jinja2_filter_icon_style(value):
+    """Formats the icon style for templates"""
+    return 'ok' if value else 'remove'
+
+@app.template_filter('service_style')
+def _jinja2_filter_service_style(value):
+    """Formats the service style for templates"""
+    return 'Online' if value else 'Offline'
