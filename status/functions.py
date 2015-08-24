@@ -399,7 +399,7 @@ def spawn_greenlet():
             gevent.sleep(15)
             modules['pfsense'].get_current_bandwidth_stats()
 
-    gevent.spawn(greenlet_get_bandwidth())
+    gevent.spawn(greenlet_get_bandwidth)
 
     @copy_current_request_context
     def greenlet_get_services():
@@ -413,7 +413,7 @@ def spawn_greenlet():
             gevent.sleep(30)
             modules['services'].update_status()
 
-    gevent.spawn(greenlet_get_services())
+    gevent.spawn(greenlet_get_services)
 
 
 @socketio.on('connect')
