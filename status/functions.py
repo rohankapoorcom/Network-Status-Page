@@ -410,8 +410,10 @@ def spawn_greenlet():
 
         while True:
             socketio.emit('services', {'data': services()})
-            gevent.sleep(120)
+            gevent.sleep(30)
             modules['services'].update_status()
+
+    gevent.spawn(greenlet_get_services())
 
 
 @socketio.on('connect')
