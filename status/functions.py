@@ -270,26 +270,29 @@ class PfSense:
         Connects to pfSense and fetches the current amount of traffic passing
         through the specified interface_name
         """
-        stdin, stdout, stderr = self._client.exec_command(
-            'vnstat -i {} -tr'.format(interface_name))
-        output = stdout.readlines()
-        dl_speed_line = str(output[-3])
-        ul_speed_line = str(output[-2])
+        try:
+            stdin, stdout, stderr = self._client.exec_command(
+                'vnstat -i {} -tr'.format(interface_name))
+            output = stdout.readlines()
+            dl_speed_line = str(output[-3])
+            ul_speed_line = str(output[-2])
 
-        pattern = re.compile(
-            r'\b[r,t]x\ *(?P<speed>\d*.\d*) (?P<units>[a-zA-z]*/s)')
+            pattern = re.compile(
+                r'\b[r,t]x\ *(?P<speed>\d*.\d*) (?P<units>[a-zA-z]*/s)')
 
-        match = re.search(pattern, dl_speed_line)
-        dl_speed = float(match.group('speed'))
-        if match.group('units') == 'kbit/s':
-            dl_speed /= 1024
-        dl_speed = round(dl_speed, 2)
+            match = re.search(pattern, dl_speed_line)
+            dl_speed = float(match.group('speed'))
+            if match.group('units') == 'kbit/s':
+                dl_speed /= 1024
+            dl_speed = round(dl_speed, 2)
 
-        match = re.search(pattern, ul_speed_line)
-        ul_speed = float(match.group('speed'))
-        if match.group('units') == 'kbit/s':
-            ul_speed /= 1024
-        ul_speed = round(ul_speed, 2)
+            match = re.search(pattern, ul_speed_line)
+            ul_speed = float(match.group('speed'))
+            if match.group('units') == 'kbit/s':
+                ul_speed /= 1024
+            ul_speed = round(ul_speed, 2)
+        except:
+            return(0, 0)
 
         return (round(dl_speed, 2), round(ul_speed, 2))
 
@@ -385,7 +388,6 @@ class Freenas:
         self._total_avail = total_avail
         self._percent_used = "{}%".format(
             int((total_space-total_avail)/total_space*100))
-        print(self._percent_used)
 
     def get_volumes(self):
         """Returns the list containing the details about all volumes"""
