@@ -2,21 +2,23 @@
 Contains functions and classes needed for processing the Network Status Page
 """
 
+from __future__ import division
+
+from datetime import datetime
+import json
 import re
 import urllib
-from datetime import datetime
-from xml.etree import ElementTree
 
+from flask import copy_current_request_context, url_for
+from flask_socketio import emit
 import forecastio
 import gevent
 import paramiko
 import requests
-from flask import copy_current_request_context, url_for
-from flask_socketio import emit
-
 from status import app, modules, socketio
 from status.views import (bandwidth, forecast, now_playing, recently_released,
-                          services)
+                          services, volumes)
+from xml.etree import ElementTree
 
 
 class Plex:
@@ -348,6 +350,60 @@ class Services:
         return self._service_list
 
 
+class Freenas:
+    """Contains the functionality needed to communicate with the Freenas API"""
+    _VOLUME_URL = '/api/v1.0/storage/volume/'
+
+    def __init__(self, hostname, username, password, **kwargs):
+        """Initializes an instance of the Freenas API"""
+        self._hostname = hostname
+        self._username = username
+        self._password = password
+        self.update_status()
+
+    def update_status(self):
+        """Updates the status for all volumes"""
+        response = requests.get(
+            '{}{}'.format(self._hostname, Freenas._VOLUME_URL),
+            auth=(self._username, self._password), verify=False)
+        volume_details = json.loads(response.content)
+
+        volumes = []
+        total_space = 0
+        total_avail = 0
+        for volume in volume_details:
+            vol_info = {}
+            vol_info['name'] = volume['vol_name']
+            vol_info['used_percent'] = volume['used_pct']
+            vol_info['space_avail'] = volume['avail']
+            vol_info['total_space'] = volume['avail'] + volume['used']
+            total_space += volume['avail'] + volume['used']
+            total_avail += volume['avail']
+            volumes.append(vol_info)
+        self._volumes = volumes
+        self._total_space = total_space
+        self._total_avail = total_avail
+        self._percent_used = "{}%".format(
+            int((total_space-total_avail)/total_space*100))
+        print(self._percent_used)
+
+    def get_volumes(self):
+        """Returns the list containing the details about all volumes"""
+        return self._volumes
+
+    def get_total_space(self):
+        """Returns the space across all volumes"""
+        return self._total_space
+
+    def get_total_avail(self):
+        """Returns the available space across all volumes"""
+        return self._total_avail
+
+    def get_percent_used(self):
+        """Returns the percentage used across all volumes"""
+        return self._percent_used
+
+
 @app.before_first_request
 def spawn_greenlet():
     """Spawns greenlets to update information from modules via SocketIO"""
@@ -382,7 +438,7 @@ def spawn_greenlet():
 
         while True:
             socketio.emit('forecast', {'data': forecast()})
-            gevent.sleep(120)
+            gevent.sleep(600)
             modules['forecast'].update()
 
     gevent.spawn(greenlet_get_forecast)
@@ -415,6 +471,18 @@ def spawn_greenlet():
 
     gevent.spawn(greenlet_get_services)
 
+    @copy_current_request_context
+    def greenlet_get_volumes():
+        """
+        A greenlet that checks volume status every 2 minutes to update via
+        SocketIO
+        """
+
+        while True:
+            socket.io.emit('volumes', {'data': volumes()})
+            gevent.sleep(120)
+            modules['freenas'].update_status()
+
 
 @socketio.on('connect')
 def client_connect():
@@ -427,3 +495,4 @@ def client_connect():
     emit('forecast', {'data': forecast()})
     emit('bandwidth', {'data': bandwidth()})
     emit('services', {'data': services()})
+    emit('volumes', {'data': volumes()})

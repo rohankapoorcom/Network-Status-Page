@@ -1,0 +1,19 @@
+<div class="exolight">
+	Total Capacity
+	{{ total_percent_used }}
+	<div rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="{{ total_space_avail | storage_unit_value }} free out of {{ total_space | storage_unit_value }}" class="progress">
+		<div class="{{ total_percent_used | storage_percent_class }}" style="width: {{ total_percent_used }}">
+		</div>
+	</div>
+</div>
+
+{% for volume in volume_list %}
+	<div class="exolight">
+		{{ volume['name'] }}
+		{{ volume['used_percent'] }}
+		<div rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="{{ volume['space_avail'] | storage_unit_value }} free out of {{ volume['total_space'] | storage_unit_value }}" class="progress">
+			<div class="{{ volume['used_percent'] | storage_percent_class }}" style="width: {{ volume['used_percent'] }}">
+			</div>
+		</div>
+	</div>
+{% endfor %}

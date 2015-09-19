@@ -42,6 +42,12 @@
                 "hostname": "",
                 "port": ""
             }
-        ]
+        ],
+
+        "freenas": {
+            "hostname": "freenas.example.com",
+            "username": "root",
+            "password": "password"
+        }
     }
 }

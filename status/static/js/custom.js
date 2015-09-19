@@ -17,5 +17,9 @@ function setupSocketIO() {
 		$('#services').html(msg['data']);
 	});
 
+	socket.on('volumes', function(msg) {
+		$('#disk_space').html(msg['data']);
+	});
+
 	socket.emit('connect');
 }
