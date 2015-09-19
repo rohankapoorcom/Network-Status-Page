@@ -312,17 +312,20 @@ class PfSense:
         Connects to pfSense and gets the average ping time to the specified
         ip address
         """
-        stdin, stdout, stderr = self._client.exec_command(
-            'ping -S {} -t 5 {}'.format(
-                interface['ip'], interface['ping_ip']))
-        output = stdout.readlines()
-        avg_ping_line = str(output[-1])
+        try:
+            stdin, stdout, stderr = self._client.exec_command(
+                'ping -S {} -t 5 {}'.format(
+                    interface['ip'], interface['ping_ip']))
+            output = stdout.readlines()
+            avg_ping_line = str(output[-1])
 
-        pattern = re.compile(r'\d+.\d*\/(?P<average>\d+.\d*)')
+            pattern = re.compile(r'\d+.\d*\/(?P<average>\d+.\d*)')
 
-        match = re.search(pattern, avg_ping_line)
-        avg_ping = int(round(float(match.group('average')), 0))
-        return avg_ping
+            match = re.search(pattern, avg_ping_line)
+            avg_ping = int(round(float(match.group('average')), 0))
+            return avg_ping
+        except:
+            return 0
 
     def get_interfaces(self):
         """
